@@ -9,6 +9,7 @@ import base64
 import socket
 import difflib
 import mimetypes
+import codecs
 
 from http.client import HTTPSConnection
 from urllib.parse import urlencode, urlparse
@@ -57,7 +58,7 @@ class Conduit:
         # Load the global and local Arcanist configuration
         self.top = Path(check_output(['git', 'rev-parse', '--show-toplevel'])
                         .decode().strip())
-        with open(self.top / '.arcconfig') as f:
+        with open(str(self.top / '.arcconfig')) as f:
             arcconfig = json.load(f)
 
         # Load the URL from the local arcconfig
@@ -69,7 +70,7 @@ class Conduit:
         arcrc_path = Path(arcrc_path).expanduser()
         arcrc = {}
         try:
-            with open(arcrc_path) as f:
+            with open(str(arcrc_path)) as f:
                 arcrc = json.load(f)
 
             self.token = next(data['token'] for url, data in arcrc['hosts'].items()
@@ -113,8 +114,9 @@ API Token from that page: """.format(self.url.netloc)).strip()
         conn = HTTPSConnection(self.url.netloc)
         conn.request("POST", '/api/' + cmd_name, body=body)
 
-        # Read the response as JSON
-        resp = json.load(conn.getresponse())
+        # Read the response as JSONa
+        reader = codecs.getreader("utf-8")
+        resp = json.load(reader(conn.getresponse()))
         if resp['error_code'] is not None:
             raise UserError("conduit[{resp['error_code']}]: {resp['error_info']}".format(resp=resp))
         return resp['result']
@@ -498,7 +500,8 @@ class Bug(Cached):
         if self._info is None:
             conn = HTTPSConnection('bugzilla.mozilla.org')
             conn.request('GET', "/rest/bug/" + str(self.bugno))
-            resp = json.load(conn.getresponse())
+            reader = codecs.getreader("utf-8")
+            resp = json.load(reader(conn.getresponse()))
             if resp.get('error', False):
                 raise UserError(resp['message'])
             self._info = resp['bugs'][0]
