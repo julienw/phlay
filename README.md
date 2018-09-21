@@ -12,7 +12,7 @@ information to the Differential remote. If useful/important information is not
 being sent, or a patch is unlandable using `lando`, please 
 [file a bug](https://github.com/mystor/phlay/issues)
 
-> **NOTE** This tool depends on `python >= 3.6`
+> **NOTE** This is a python 3.5-compatible version of the original phlay
 
 > **NOTE** This is a hacky tool made for my own use, probably don't depend on 
 > it unless you're OK with it breaking.
